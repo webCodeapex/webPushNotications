@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Document</title>
+        <style>
+        html, body{
+            margin: 0;
+            padding: 0;
+        }
+        </style>
+    </head>
+    <body>
+        <div>
+            <p id="token"></p>
+        </div>
+        <div>
+            <p id="from"></p>
+            <p id="title"></p>
+            <p id="message"></p>
+        </div>
+    </body>
+    <!-- THESE ARE LATEST cdn LINKS AT THE TIME OF UPLOAD YOU CAN CHECK AND USE LATEST VERSION cdn -->
+    <script src="https://www.gstatic.com/firebasejs/6.5.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.5.0/firebase-messaging.js"></script>
+
+    <!-- LINK TO FIREBASE CONFIGURATION FILE -->
+    <script src="firebaseSDK.js"></script>
+    <script>
+        const messaging = firebase.messaging();
+
+        // YOU CAN GENERATE A NEW ONE IN FIREBASE CONSOLE (https://console.firebase.google.com/) -> CLICK ON YOUR PROJECT -> ON THE LEFT TOP, CLICK ON THE SETTINGS ICON , NEAR PROJECT OVERVIEW -> CLICK ON CLOUD MESSAGING -> AT THE BOTTOM OF THE PAGE IN WEB CONFIGURATION SECTION, GENERATE A NEW KEY
+        messaging.usePublicVapidKey('INSERT-VAP-ID-KEY');
+
+        // ASK FOR PERMISSIONS FOR NOTIFICATION
+        Notification.requestPermission().then((permission) => {
+            if(permission == 'granted'){
+                // IF USER ACCEPTS, WE WILL ACCESS TOKEN INSTANCE
+                getTokenInstance();
+            } else {
+                console.log('permission denied');
+            }
+        });
+
+        // ACCESS TOKEN INSTANCE, YOU WILL NEED THIS TOKEN TO SEND NOTIFICATION
+        function getTokenInstance(){
+            messaging.getToken().then((currentToken) => {
+                document.getElementById('token').innerHTML = currentToken;
+            })
+        }
+
+        // IF TOKEN INSTANCE REFRESH THIS FUNCTION WILL BE TRIGGERED
+        messaging.onTokenRefresh(() => {
+            messaging.getToken().then((refreshedToken) => {
+                console.log('Token refreshed.');
+            }).catch((err) => {
+                console.log('Unable to retrieve refreshed token ', err);
+            });
+        });
+
+        // WHEN A NEW NOTIFICATION OR MESSAGE IS RECIEVED THIS FUNCTION WILL BE TRIGGERED
+        messaging.onMessage((notification) => {
+            document.getElementById('from').innerHTML = 'from : ' + notification.from;
+            document.getElementById('title').innerHTML = notification.notification.title;
+            document.getElementById('message').innerHTML += '<small>' + notification.notification.body + '</small><br>';
+        });
+    </script>
+</html>
